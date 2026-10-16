@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%231F3A5F%22/%3E%3Cpath d=%22M9 16.5l4.5 4.5L23 11%22 stroke=%22%232A9D8F%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<title>Salon Pay Model Simulator</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one column on phones; stylist cards in 2–3 columns on wider screens (container queries on .cq). */
+:root{
+  --navy:#1F3A5F; --teal:#2A9D8F; --teal-strong:#1F7F73; --on-teal:#FFFFFF; --teal-soft:#E2F2EF;
+  --bg:#F4F6F9; --surface:#FFFFFF; --fg:#16253A; --muted:#536175; --line:#DAE1EA;
+  --input:#FFF7D6; --input-line:#DCC77A; --readonly:#F2F2F2;
+  --ok:#2E7D32; --ok-bg:#E5F1E6; --warn:#8F5600; --warn-bg:#FFF0D6; --bad:#C62828; --bad-bg:#FBE6E6;
+  --shadow:0 1px 2px rgba(22,37,58,.06),0 6px 18px rgba(22,37,58,.07);
+  --font:"Plus Jakarta Sans",Arial,Helvetica,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --navy:#9DB8DC; --teal:#46B8AA; --teal-strong:#4FC0B1; --on-teal:#05221E; --teal-soft:#123833;
+  --bg:#0E1520; --surface:#162131; --fg:#E7EDF4; --muted:#9EACBD; --line:#2B394B;
+  --input:#332D18; --input-line:#7E6A32; --readonly:#1D2938;
+  --ok:#86C98A; --ok-bg:#16301D; --warn:#F2B862; --warn-bg:#3A2B12; --bad:#F28B8B; --bad-bg:#3B1B1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --navy:#9DB8DC; --teal:#46B8AA; --teal-strong:#4FC0B1; --on-teal:#05221E; --teal-soft:#123833;
+  --bg:#0E1520; --surface:#162131; --fg:#E7EDF4; --muted:#9EACBD; --line:#2B394B;
+  --input:#332D18; --input-line:#7E6A32; --readonly:#1D2938;
+  --ok:#86C98A; --ok-bg:#16301D; --warn:#F2B862; --warn-bg:#3A2B12; --bad:#F28B8B; --bad-bg:#3B1B1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+h1,h2,h3{text-wrap:balance;margin:0}
+p{margin:0}
+.num{font-variant-numeric:tabular-nums}
+.outer{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 0}
+.cq{container-type:inline-size;max-width:1180px;margin:0 auto}
+.brandbar{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:var(--navy);margin-bottom:14px}
+.mark{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:#2A9D8F;color:#fff;font-weight:800;font-size:14px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.salon{border:1px dashed transparent;background:transparent;font-size:clamp(24px,4.4cqi,34px);color:var(--navy);font-weight:800;letter-spacing:-.02em;padding:0 4px;margin-left:-5px;border-radius:8px;min-width:0;width:100%;max-width:16em}
+.salon:hover,.salon:focus{border-color:var(--input-line);background:var(--input);outline:none}
+.top p{color:var(--muted)}
+.lnk{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--teal-strong);text-decoration:underline;cursor:pointer}
+.seg{display:inline-flex;background:var(--readonly);border-radius:12px;padding:4px;gap:4px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;border-radius:9px;padding:8px 14px;font-weight:700;font-size:15px;cursor:pointer;min-height:44px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
+.hint{font-size:15px;color:var(--muted);margin-top:12px}
+.wibar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:12px;padding:10px 14px;border-left:4px solid var(--teal);background:var(--teal-soft);border-radius:8px;font-size:15px}.wibar span{flex:1 1 260px}
+.kpis{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:14px}
+@container (min-width:760px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.kpi .l{font-size:13px;color:var(--muted);font-weight:600}
+.kpi .v{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.kpi .s{font-size:13px;color:var(--muted)}
+.kpi.lead{background:var(--navy);border-color:var(--navy);color:var(--surface)}
+.kpi.lead .l,.kpi.lead .s{color:var(--surface);opacity:.85}
+details.box{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 16px}
+details.box summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
+.sgrid{display:grid;gap:10px 12px;grid-template-columns:repeat(2,minmax(0,1fr));padding-bottom:12px}
+.sgrid .full{grid-column:1/-1}
+@container (min-width:760px){.settings .sgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.sf{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted);min-width:0}
+.nb{display:flex;align-items:center;background:var(--input);border:1px solid var(--input-line);border-radius:10px;padding:0 10px;min-height:44px;width:100%}
+.nb input{border:0;background:transparent;width:100%;min-width:0;font-weight:700;font-size:16px;padding:8px 2px;min-height:42px;font-variant-numeric:tabular-nums;color:var(--fg)}
+.nb input:focus{outline:none}
+.nb:focus-within{outline:3px solid var(--teal);outline-offset:1px}
+.nb .pre,.nb .suf{color:var(--muted);font-weight:600}
+.sel{background:var(--input);border:1px solid var(--input-line);border-radius:10px;min-height:44px;padding:0 10px;font-weight:700;font-size:16px;color:var(--fg);width:100%}
+.warn{font-size:13px;font-weight:600;color:var(--warn)}
+.cards{display:grid;gap:12px;margin-top:16px}
+@container (min-width:760px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container (min-width:1100px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.scard-h{display:flex;gap:8px;align-items:center}
+.sname{flex:1;min-width:0;border:1px solid var(--input-line);background:var(--input);border-radius:10px;min-height:44px;padding:0 10px;font-weight:800;font-size:16px}
+.icon-btn{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;color:var(--muted);flex:none}
+.tiers{border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:8px}
+.tiers .th{font-size:13px;font-weight:700;color:var(--muted)}
+.trow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr) 44px;gap:8px;align-items:end}
+.addt{border:1px dashed var(--line);background:transparent;border-radius:10px;min-height:44px;font-weight:700;color:var(--teal-strong);cursor:pointer}
+.sres{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.sres .k{font-size:13px;color:var(--muted);font-weight:600;width:100%}
+.sres b{font-size:22px;letter-spacing:-.02em}
+.sres .p{font-size:14px;color:var(--muted);width:100%}
+.addcard{border:2px dashed var(--line);border-radius:16px;background:transparent;min-height:120px;font-weight:800;font-size:16px;color:var(--teal-strong);cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap}
+.chip-ok{background:var(--ok-bg);color:var(--ok)} .chip-warn{background:var(--warn-bg);color:var(--warn)} .chip-bad{background:var(--bad-bg);color:var(--bad)}
+.tblwrap{overflow-x:auto;margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+table.t{border-collapse:collapse;width:100%;min-width:680px;font-size:14px}
+table.t th,table.t td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.t th:first-child,table.t td:first-child,table.t th.l,table.t td.l{text-align:left}
+table.t th{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+table.t tbody tr:last-child td{border-bottom:0}
+table.t tfoot td{font-weight:800;border-top:2px solid var(--line);border-bottom:0}
+.cmp{display:grid;gap:12px;margin-top:16px}
+@container (min-width:760px){.cmp{grid-template-columns:1fr 1fr 1fr}}
+.cmpc{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:8px;align-content:start}
+.cmpc h3{font-size:16px}
+.cmpc .row{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.cmpc .row b{font-variant-numeric:tabular-nums}
+.cmpc.diff{background:var(--teal-soft);border-color:transparent}
+.huge{font-size:30px;font-weight:800;letter-spacing:-.02em}
+.note{font-size:15px;color:var(--muted);margin-top:12px}
+.pos{color:var(--ok)} .negv{color:var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;color:var(--fg)}
+.foot{font-size:14px;color:var(--muted);padding-block:24px 32px;border-top:1px solid var(--line);margin-top:28px;display:grid;gap:4px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#16253A;color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;font-weight:600;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.25);width:max-content;max-width:min(92vw,520px)}
+.confirm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--warn-bg);color:var(--fg);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:15px}
+@media print{
+  body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .actions,.seg,.addcard,.icon-btn,.addt,details.box,.toast{display:none!important}
+  .scard,.kpi,.cmpc{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<div class="outer"><div class="cq">
+  <div class="brandbar"><span class="mark" aria-hidden="true">✓</span>OwnersReady · Salon Pay</div>
+  <div class="top">
+    <div style="min-width:0;flex:1 1 280px"><input class="salon" id="salon" aria-label="Salon name" value="Juniper &amp; Co. Salon"><p>Monthly numbers. A month counts as 4.33 weeks. <button class="lnk" id="bBlankTop">Start blank with your numbers</button></p></div>
+    <div class="seg" role="group" aria-label="Which setup">
+      <button data-scn="today" aria-pressed="true">Today's setup</button>
+      <button data-scn="whatif" aria-pressed="false">What-if</button>
+      <button data-scn="compare" aria-pressed="false">Compare</button>
+    </div>
+  </div>
+  <div id="edit">
+    <div class="wibar" id="wibar" hidden><span>What-if starts as a copy of Today's setup. Once you change something here, it keeps your changes even if you edit Today later.</span><button class="btn" id="wiCopy">Copy today's setup into What-if</button></div>
+    <p class="hint" id="hint"></p>
+    <div class="kpis" id="kpis"></div>
+    <details class="box settings"><summary>Salon settings (shared by both setups)</summary><div class="sgrid" id="settings"></div></details>
+    <div class="cards" id="cards"></div>
+    <div class="tblwrap"><table class="t" id="table"></table></div>
+  </div>
+  <div id="compare" hidden></div>
+  <div class="actions">
+    <button class="btn" id="bLink">Copy link</button>
+    <button class="btn" id="bPdf" hidden>Save as PDF</button>
+    <button class="btn" id="bReset">Start from the example</button>
+    <button class="btn" id="bBlank">Start blank</button>
+  </div>
+  <div id="confirmBox"></div>
+  <footer class="foot">
+    <span><b>Estimates only — not tax or legal advice.</b> Whether a stylist is an employee or a booth renter depends on federal and state rules. See the Owner's Guide.</span>
+    <span>Your numbers stay in this page and in the links you copy. Nothing is sent anywhere.</span>
+    <span>Salon Pay by OwnersReady</span>
+  </footer>
+</div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+/* ---- Settings ---- */
+const CONFIG={PUBLIC_URL:'https://juanquintero90.github.io/ownersready/salon-pay/simulator-k7m2/'};
+/*SIM-START*/
+const WPM=52/12;
+const BASIS={week:WPM,biweek:WPM/2,month:1};
+function tiered(sales,tiers,mult){let pay=0;const t=[...tiers].filter(x=>x.pct!==''&&x.pct!=null).sort((a,b)=>a.from-b.from);
+  for(let i=0;i<t.length;i++){const lo=t[i].from*mult,hi=i+1<t.length?t[i+1].from*mult:Infinity;if(sales<=lo)break;pay+=(Math.min(sales,hi)-lo)*t[i].pct/100;}return pay;}
+/** One stylist, one month. st = salon settings. */
+function run(s,st){
+  const sales=s.svc*s.ticket*WPM,chair=st.fixed/Math.max(1,st.chairs),retComm=s.retail*s.retailPct/100;
+  const cs=sales*(1-st.backbar/100);
+  const retMargin=s.retail*(1-st.retailCost/100)-s.retail*st.card/100;
+  const emp=!['booth','suite'].includes(s.model);let pay=0,keeps,stylist,pct=null,rent=0;
+  if(s.model==='commission')pay=tiered(cs,s.tiers,BASIS[st.tierBasis])+retComm;
+  if(s.model==='hourly')pay=s.hRate*s.hHours*WPM+cs*s.hPct/100+retComm;
+  if(s.model==='hybrid')pay=cs*s.hyPct/100-s.hyFee*WPM+retComm;
+  if(emp){const tax=Math.max(0,pay)*st.tax/100,prod=sales*st.prodPct/100,card=sales*st.card/100;
+    keeps=sales+retMargin-pay-prod-tax-card;pct=keeps/Math.max(1,sales+s.retail)*100;stylist=pay;}
+  else{rent=s.model==='booth'?s.boothRent*WPM:s.suiteRent;keeps=rent+retMargin-retComm;stylist=sales-rent-sales*st.prodPct/100-sales*st.card/100+retComm;}
+  let status='ok';if(keeps<chair)status='bad';else if(emp&&pct<st.target)status='warn';
+  return {sales,pay,keeps,stylist,pct,emp,rent,status,chair,hourlyEq:emp&&s.hHours>0?pay/(s.hHours*WPM):null};
+}
+function summarize(list,st){const rows=list.map(s=>({s,r:run(s,st)}));
+  const keeps=rows.reduce((a,x)=>a+x.r.keeps,0),team=rows.filter(x=>x.r.emp).reduce((a,x)=>a+x.r.pay,0),rent=rows.reduce((a,x)=>a+x.r.rent,0),sales=rows.filter(x=>x.r.emp).reduce((a,x)=>a+x.r.sales+x.s.retail,0);
+  return {rows,keeps,team,rent,sales,profit:keeps-st.fixed,day:keeps>0?Math.ceil(st.fixed/(keeps/30.4)):null};}
+/*SIM-END*/
+(function(){
+"use strict";
+const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const fmt=(n,d=0)=>{const s=Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});return (n<-0.004?'−$':'$')+s;};
+const sign=v=>(v>=0?'+':'')+fmt(v);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3800);}
+const chip=(k,t)=>`<span class="chip chip-${k}">${{ok:'✓',warn:'⚠',bad:'✕'}[k]} ${t}</span>`;
+const STATUS={ok:'Healthy',warn:'Thin',bad:'Losing money'};
+const statusChip=r=>chip(r.status,STATUS[r.status]+(r.pct!=null?` · ${Math.round(r.pct)}%`:''));
+const MODELS=[['commission','Commission (one % or tiers)'],['hourly','Hourly + commission'],['hybrid','Hybrid'],['booth','Booth rent'],['suite','Suite rent']];
+const MNAME=Object.fromEntries(MODELS);
+let uidN=0;const uid=()=>'s'+(++uidN);
+const mk=o=>Object.assign({id:uid(),name:'New stylist',model:'commission',svc:20,ticket:65,retail:0,retailPct:10,
+  tiers:[{from:0,pct:40}],hRate:12,hHours:30,hPct:20,boothRent:450,suiteRent:1800,hyPct:40,hyFee:50},o);
+const clone=list=>list.map(s=>Object.assign(JSON.parse(JSON.stringify(s)),{id:uid()}));
+
+function example(){
+  const today=[mk({name:'Ana Ruiz',svc:34,ticket:78,retail:900}),mk({name:'Brooke Tate',svc:26,ticket:70,retail:500}),
+    mk({name:'Camila Ortiz',svc:15,ticket:60,retail:250}),mk({name:'Faith Kim',model:'hybrid',svc:22,ticket:68,hyPct:40,hyFee:50}),
+    mk({name:'Dee Harper',model:'booth',svc:25,ticket:80,retail:300,retailPct:15,boothRent:475}),
+    mk({name:'Erin Walsh',model:'booth',svc:24,ticket:85,retailPct:15,boothRent:500})];
+  today.forEach(s=>{if(s.model==='commission')s.tiers=[{from:0,pct:45},{from:1400,pct:55},{from:2800,pct:60}];});
+  const whatif=clone(today);
+  whatif.forEach(s=>{if(s.model==='commission')s.tiers=[{from:0,pct:40},{from:1850,pct:45},{from:3250,pct:50}];});
+  Object.assign(whatif[2],{model:'booth',boothRent:475,retailPct:15});
+  return {salon:'Juniper & Co. Salon',settings:{fixed:12000,chairs:6,prodPct:11,backbar:0,retailCost:50,card:3,tax:8,target:35,tierBasis:'biweek'},today,whatif,wiEdited:false};
+}
+function blank(){const today=[mk({name:'Stylist 1'})];return {salon:'My salon',settings:{fixed:0,chairs:1,prodPct:11,backbar:0,retailCost:50,card:3,tax:8,target:35,tierBasis:'biweek'},today,whatif:clone(today)};}
+let SIM=example();SIM.scn='today';
+
+/* ---- URL state: a bare #token (letters, digits, - _) so it survives any host ---- */
+const SHORTS=['name','model','svc','ticket','retail','retailPct','tiers','hRate','hHours','hPct','boothRent','suiteRent','hyPct','hyFee'];
+const packS=s=>SHORTS.map(k=>k==='tiers'?s.tiers.map(t=>[t.from,t.pct]):s[k]);
+const unpackS=a=>{const o={};SHORTS.forEach((k,i)=>o[k]=k==='tiers'?(a[i]||[]).map(([from,pct])=>({from,pct})):a[i]);return mk(o);};
+function token(){const st=SIM.settings;const data=[1,SIM.salon,[st.fixed,st.chairs,st.prodPct,st.backbar,st.retailCost,st.card,st.tax,st.target,st.tierBasis],SIM.today.map(packS),SIM.whatif.map(packS)];
+  const b=btoa(unescape(encodeURIComponent(JSON.stringify(data))));return 'sim_'+b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function readToken(h){if(!h.startsWith('sim_'))return false;try{let b=h.slice(4).replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';
+  const d=JSON.parse(decodeURIComponent(escape(atob(b))));if(d[0]!==1)return false;const [fixed,chairs,prodPct,backbar,retailCost,card,tax,target,tierBasis]=d[2];
+  SIM={salon:d[1],settings:{fixed,chairs,prodPct,backbar,retailCost,card,tax,target,tierBasis},today:d[3].map(unpackS),whatif:d[4].map(unpackS),scn:'today',wiEdited:true};return true;}catch(e){return false;}}
+
+/* ---- rendering ---- */
+const nb=(attrs,pre,suf)=>`<div class="nb">${pre?`<span class="pre">${pre}</span>`:''}<input type="number" min="0" inputmode="decimal" ${attrs}>${suf?`<span class="suf">${suf}</span>`:''}</div>`;
+const SETF=[['fixed','Fixed costs / month','$'],['chairs','Chairs',''],['prodPct','Product cost (% of service sales)','','%'],['backbar','Backbar fee to stylists','','%'],['retailCost','Retail product cost','','%'],['card','Card fees','','%'],['tax','Payroll taxes','','%'],['target','Target: salon keeps','','%']];
+function renderSettings(){const st=SIM.settings;
+  $('#settings').innerHTML=SETF.map(([k,l,p,s])=>`<label class="sf">${l}${nb(`data-set="${k}" value="${st[k]}" aria-label="${l}"`,p,s)}</label>`).join('')+
+  `<label class="sf">Tiers count sales per<select class="sel" data-set="tierBasis">${[['week','Week'],['biweek','2-week pay period'],['month','Month']].map(([v,t])=>`<option value="${v}"${st.tierBasis===v?' selected':''}>${t}</option>`).join('')}</select></label>`;}
+const field=(s,k,l,p,suf)=>`<label class="sf">${l}${nb(`data-k="${k}" value="${s[k]}" aria-label="${l}"`,p,suf)}</label>`;
+function modelFields(s){
+  if(s.model==='commission')return `<div class="tiers"><div class="th">${s.tiers.length<2?'Commission rate (add tiers only if the % rises with sales)':'Tiers ('+({week:'weekly',biweek:'per 2-week pay period',month:'monthly'})[SIM.settings.tierBasis]+' service sales)'}</div>
+    ${s.tiers.map((t,i)=>`<div class="trow"><label class="sf">From${nb(`data-tier="${i}" data-tk="from" value="${t.from}" aria-label="Tier ${i+1} starts at"${i===0?' readonly':''}`,'$')}</label><label class="sf">Rate${nb(`data-tier="${i}" data-tk="pct" value="${t.pct}" aria-label="Tier ${i+1} rate"`,'','%')}</label>${i>0?`<button class="icon-btn" data-rmtier="${i}" aria-label="Remove tier ${i+1}">×</button>`:'<span></span>'}</div>`).join('')}
+    ${s.tiers.length<4?'<button class="addt" data-addtier>+ Add tier</button>':''}</div>`;
+  if(s.model==='hourly')return `<div class="sgrid">${field(s,'hRate','Hourly rate','$')}${field(s,'hHours','Hours / week','')}${field(s,'hPct','Commission','','%')}</div>`;
+  if(s.model==='booth')return `<div class="sgrid">${field(s,'boothRent','Booth rent / week','$')}</div>`;
+  if(s.model==='suite')return `<div class="sgrid">${field(s,'suiteRent','Suite rent / month','$')}</div>`;
+  return `<div class="sgrid">${field(s,'hyPct','Commission','','%')}${field(s,'hyFee','Chair fee / week','$')}</div>`;
+}
+function cardHTML(s){return `<article class="scard" data-id="${s.id}">
+  <div class="scard-h"><input class="sname" data-k="name" value="${esc(s.name)}" aria-label="Stylist name"><button class="icon-btn" data-rm aria-label="Remove ${esc(s.name)}">×</button></div>
+  <label class="sf">Pay model<select class="sel" data-model>${MODELS.map(([v,t])=>`<option value="${v}"${s.model===v?' selected':''}>${t}</option>`).join('')}</select></label>
+  <div class="sgrid"><label class="sf full">Service sales / month${nb(`data-sales value="${Math.round(s.svc*s.ticket*WPM)}" aria-label="Service sales per month"`,'$')}</label>${field(s,'svc','or: services / week','')}${field(s,'ticket','× average ticket','$')}${field(s,'retail','Retail sales / month','$')}${field(s,'retailPct','Retail commission','','%')}</div>
+  <div class="mf">${modelFields(s)}</div><p class="warn" data-warn hidden></p><div class="sres" data-res></div></article>`;}
+const list=()=>SIM[SIM.scn==='compare'?'today':SIM.scn];
+function renderCards(){$('#cards').innerHTML=list().map(cardHTML).join('')+'<button class="addcard" id="addSty">+ Add stylist</button>';update();}
+function update(){
+  const st=SIM.settings,sm=summarize(list(),st);
+  $('#hint').textContent=SIM.scn==='today'?"This is how you pay people today. Edit the cards to match your team.":"Try a change here. Today's setup stays as it is. Open Compare to see the difference.";
+  const day=sm.day&&sm.day<=30;
+  $('#kpis').innerHTML=`
+   <div class="kpi lead"><div class="l">Salon profit after fixed costs</div><div class="v num">${fmt(sm.profit)}</div><div class="s">per month</div></div>
+   <div class="kpi"><div class="l">Paid to team</div><div class="v num">${fmt(sm.team)}</div><div class="s">employees, per month</div></div>
+   <div class="kpi"><div class="l">Rent from renters</div><div class="v num">${fmt(sm.rent)}</div><div class="s">per month</div></div>
+   <div class="kpi"><div class="l">Breakeven</div><div class="v">${!st.fixed?'—':day?'Day '+sm.day:'Not reached'}</div><div class="s">${!st.fixed?'add your fixed costs in Salon settings':day?'of the month, fixed costs are covered':"fixed costs aren't covered"}</div></div>`;
+  sm.rows.forEach(({s,r})=>{const c=$(`.scard[data-id="${s.id}"]`);if(!c)return;
+    c.querySelector('[data-res]').innerHTML=`<span class="k">Salon keeps</span><b class="num${r.keeps<0?' negv':''}">${fmt(r.keeps)}/mo</b>${statusChip(r)}<span class="p">${r.emp?'Stylist earns':'Renter keeps about'} ${fmt(r.stylist)}/mo${r.emp?'':', before taxes'}</span>`;
+    const w=[];if(s.model==='commission'&&s.tiers.some(t=>t.pct>70)||s.model==='hybrid'&&s.hyPct>70||s.model==='hourly'&&s.hPct>70)w.push("A rate over 70% is higher than usual. Is it right?");
+    if(s.model==='booth'&&!s.boothRent||s.model==='suite'&&!s.suiteRent)w.push('Rent of $0? Is it right?');
+    if(s.svc*s.ticket*WPM>40000)w.push("Over $40,000 a month in sales is higher than usual. Is it right?");
+    const we=c.querySelector('[data-warn]');we.textContent=w.join(' ');we.hidden=!w.length;});
+  $('#table').innerHTML=`<thead><tr><th>Stylist</th><th class="l">Pay model</th><th>Sales / mo</th><th>Paid to stylist</th><th>Salon keeps</th><th class="l">Status</th></tr></thead><tbody>${
+    sm.rows.map(({s,r})=>`<tr><td><b>${esc(s.name)}</b></td><td class="l">${MNAME[s.model]}</td><td>${r.emp?fmt(r.sales+s.retail):'—'}</td><td>${r.emp?fmt(r.pay):'—'}</td><td>${fmt(r.keeps)}</td><td class="l">${statusChip(r)}</td></tr>`).join('')
+  }</tbody><tfoot><tr><td>Whole salon</td><td></td><td>${fmt(sm.sales)}</td><td>${fmt(sm.team)}</td><td>${fmt(sm.keeps)}</td><td class="l">${fmt(st.fixed)} fixed costs</td></tr></tfoot>`;
+}
+function renderCompare(){
+  const st=SIM.settings,a=summarize(SIM.today,st),b=summarize(SIM.whatif,st),d=b.profit-a.profit;
+  const names=[...new Set([...SIM.today,...SIM.whatif].map(s=>s.name))];
+  const find=(sm,n)=>sm.rows.find(x=>x.s.name===n);
+  let stayDelta=0;names.forEach(n=>{const x=find(a,n),y=find(b,n);if(x&&y&&x.r.emp&&y.r.emp)stayDelta+=y.r.pay-x.r.pay;});
+  $('#compare').innerHTML=(SIM.staleWi?`<div class="wibar"><span>You changed Today\'s setup after making this What-if, so What-if may still have your old numbers.</span><button class="btn" id="copyToday">Copy today\'s setup into What-if</button></div>`:'')+`<div class="cmp">
+   <div class="cmpc"><h3>Today's setup</h3><div class="row"><span>Profit after fixed costs</span><b>${fmt(a.profit)}</b></div><div class="row"><span>Paid to team</span><b>${fmt(a.team)}</b></div><div class="row"><span>Rent from renters</span><b>${fmt(a.rent)}</b></div></div>
+   <div class="cmpc"><h3>What-if</h3><div class="row"><span>Profit after fixed costs</span><b>${fmt(b.profit)}</b></div><div class="row"><span>Paid to team</span><b>${fmt(b.team)}</b></div><div class="row"><span>Rent from renters</span><b>${fmt(b.rent)}</b></div></div>
+   <div class="cmpc diff"><h3>Difference for the salon</h3><div class="huge num ${d>=0?'pos':'negv'}">${sign(d)}/mo</div><div class="row"><span>Per year</span><b>${sign(d*12)}</b></div></div></div>
+   <div class="tblwrap"><table class="t"><thead><tr><th>Stylist</th><th class="l">Today</th><th class="l">What-if</th><th>Salon keeps today</th><th>Salon keeps what-if</th><th>Difference / mo</th><th>Stylist change / mo</th></tr></thead><tbody>${
+    names.map(n=>{const x=find(a,n),y=find(b,n),k0=x?x.r.keeps:0,k1=y?y.r.keeps:0,p0=x?x.r.stylist:0,p1=y?y.r.stylist:0;
+      return `<tr><td><b>${esc(n)}</b></td><td class="l">${x?MNAME[x.s.model]:'—'}</td><td class="l">${y?MNAME[y.s.model]:'—'}</td><td>${fmt(k0)}</td><td>${fmt(k1)}</td><td class="${k1-k0>=0?'pos':'negv'}">${sign(k1-k0)}</td><td>${sign(p1-p0)}</td></tr>`;}).join('')
+   }</tbody></table></div>
+   <p class="note">${SIM.today.length===1&&SIM.whatif.length===1?'Comparing one stylist: read the Difference. Profit counts all your fixed costs, so it can be negative with one chair filled. ':''}${stayDelta<-1?`Stylists who stay employees earn ${fmt(-stayDelta)} less a month under What-if. The Switch Plan has the talk script and a 30-day timeline for that conversation.`:'Stylists who stay employees earn the same or more under What-if.'} For renters, "stylist change" is what they keep after rent, before taxes.</p>
+   <div class="actions"><button class="btn" data-go="whatif">Edit What-if</button><button class="btn" id="copyToday">Copy today's setup into What-if</button></div>`;
+}
+function setScn(v){if(v==='whatif'&&!SIM.wiEdited&&SIM.todayChanged){SIM.whatif=clone(SIM.today);SIM.todayChanged=false;toast('What-if now starts from your Today\'s setup. Change one thing to compare.');} // until What-if is edited, it follows today
+  SIM.scn=v;$$('.seg [data-scn]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.scn===v)));$('#wibar').hidden=v!=='whatif';
+  $('#edit').hidden=v==='compare';$('#compare').hidden=v!=='compare';if(v==='compare')renderCompare();else renderCards();}
+function renderAll(){$('#salon').value=SIM.salon;renderSettings();setScn(SIM.scn||'today');}
+
+/* ---- events ---- */
+$$('.seg [data-scn]').forEach(b=>b.addEventListener('click',()=>setScn(b.dataset.scn)));
+$('#salon').addEventListener('input',e=>SIM.salon=e.target.value);
+$('#compare').addEventListener('click',e=>{if(e.target.closest('[data-go]'))setScn('whatif');if(e.target.id==='copyToday'){SIM.whatif=clone(SIM.today);SIM.wiEdited=false;SIM.staleWi=false;renderCompare();toast('What-if now matches today. Edit it to try a change.');}});
+const findS=el=>{const c=el.closest('.scard');return c?list().find(s=>s.id===c.dataset.id):null;};
+const markWi=()=>{if(SIM.scn==='whatif')SIM.wiEdited=true;else if(SIM.scn==='today'){SIM.todayChanged=true;if(SIM.wiEdited)SIM.staleWi=true;}};
+$('#wiCopy').addEventListener('click',()=>{SIM.whatif=clone(SIM.today);SIM.wiEdited=false;SIM.staleWi=false;renderCards();toast('What-if now matches today. Change one thing to see the difference.');});
+$('#cards').addEventListener('input',e=>{const t=e.target,s=findS(t);if(!s)return;markWi();
+  if(t.dataset.k==='name'){s.name=t.value;update();return;}
+  let v=parseFloat(t.value);if(isNaN(v)||v<0)v=0;
+  const card=t.closest('.scard');
+  if(t.matches('[data-sales]')){if(!s.svc)s.svc=1;s.ticket=Math.round(v/WPM/s.svc*100)/100;card.querySelector('[data-k="ticket"]').value=s.ticket;update();return;}
+  if(t.dataset.tier!=null)s.tiers[+t.dataset.tier][t.dataset.tk]=v;else if(t.dataset.k)s[t.dataset.k]=v;
+  if(t.dataset.k==='svc'||t.dataset.k==='ticket'){const f=card.querySelector('[data-sales]');if(f)f.value=Math.round(s.svc*s.ticket*WPM);}
+  update();});
+$('#cards').addEventListener('change',e=>{const t=e.target;if(!t.matches('[data-model]'))return;markWi();const s=findS(t);s.model=t.value;t.closest('.scard').querySelector('.mf').innerHTML=modelFields(s);update();});
+$('#cards').addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;markWi();
+  if(t.id==='addSty'){list().push(mk({name:'Stylist '+(list().length+1)}));renderCards();const c=$$('.scard').pop();c&&c.querySelector('.sname').select();return;}
+  const s=findS(t);if(!s)return;const card=t.closest('.scard');
+  if(t.matches('[data-rm]')){const L=list();L.splice(L.indexOf(s),1);renderCards();toast(s.name+' removed from this setup.');}
+  if(t.matches('[data-addtier]')){const last=s.tiers[s.tiers.length-1];s.tiers.push({from:(Number(last.from)||0)+1400,pct:Math.min(80,(Number(last.pct)||0)+5)});card.querySelector('.mf').innerHTML=modelFields(s);update();}
+  if(t.matches('[data-rmtier]')){s.tiers.splice(+t.dataset.rmtier,1);card.querySelector('.mf').innerHTML=modelFields(s);update();}});
+$('#settings').addEventListener('input',e=>{const k=e.target.dataset.set;if(!k||k==='tierBasis')return;let v=parseFloat(e.target.value);if(isNaN(v)||v<0)v=0;if(k==='chairs'&&v<1)v=1;SIM.settings[k]=v;update();});
+$('#settings').addEventListener('change',e=>{if(e.target.dataset.set==='tierBasis'){SIM.settings.tierBasis=e.target.value;renderCards();}});
+$('#bLink').addEventListener('click',()=>{const url=(CONFIG.PUBLIC_URL||location.href.split('#')[0])+'#'+token();
+  const ok=()=>toast('Link copied. Bookmark it or save it in your notes: it brings back this whole setup.');
+  try{navigator.clipboard.writeText(url).then(ok,()=>toast('Copy this link: '+url));}catch(e){toast('Copy this link: '+url);}});
+function ask(msg,yes){$('#confirmBox').innerHTML=`<div class="confirm" role="alert"><span>${msg}</span><button class="btn" id="cfYes">Yes, replace it</button><button class="btn" id="cfNo">Keep mine</button></div>`;
+  $('#cfYes').onclick=()=>{$('#confirmBox').innerHTML='';yes();};$('#cfNo').onclick=()=>$('#confirmBox').innerHTML='';$('#cfYes').focus();}
+$('#bReset').addEventListener('click',()=>ask('Replace what you typed with the example salon?',()=>{SIM=example();SIM.scn='today';renderAll();toast('Example salon loaded.');}));
+$('#bBlankTop').addEventListener('click',()=>$('#bBlank').click());
+$('#bBlank').addEventListener('click',()=>ask('Clear everything and start with one blank stylist?',()=>{SIM=blank();SIM.scn='today';renderAll();$('.settings').open=true;$('.settings').scrollIntoView({behavior:'smooth',block:'start'});toast('Blank setup ready. Fill in Salon settings first: fixed costs and chairs.');}));
+let topLevel=false;try{topLevel=window.self===window.top;}catch(e){}
+if(topLevel){$('#bPdf').hidden=false;$('#bPdf').addEventListener('click',()=>window.print());}
+try{readToken(decodeURIComponent((location.hash||'').slice(1)));}catch(e){}
+renderAll();
+})();
+</script>
+
+</body>
+</html>
